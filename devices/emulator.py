@@ -37,32 +37,32 @@ import subprocess as sub
 import settings
 from util import motifcore_installer
 from util import pack_and_deploy
+from sets import Set
 
+devices=Set([])
 
 def get_devices():
 	""" will also get devices ready
 	:return: a list of avaiable devices names, e.g., emulator-5556
 	"""
-	ret = []
+	global devices
 	p = sub.Popen('adb devices', stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
 	output, errors = p.communicate()
 	print output
 	segs = output.split("\n")
 	for seg in segs:
 		device = seg.split("\t")[0].strip()
-		if seg.startswith("emulator-"):
+		if device in devices:
 			p = sub.Popen('adb -s ' + device + ' shell getprop init.svc.bootanim', stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
 			output, errors = p.communicate()
 			if output.strip() != "stopped":
 				time.sleep(10)
 				print "waiting for the emulator:", device
 				return get_devices()
-			else:
-				ret.append(device)
 
-	assert len(ret) > 0
+	assert len(devices) > 0
 
-	return ret
+	return devices
 
 
 def boot_devices():
@@ -70,15 +70,34 @@ def boot_devices():
 	prepare the env of the device
 	:return:
 	"""
+	global devices
 	for i in range(0, settings.DEVICE_NUM):
 		device_name = settings.AVD_SERIES + str(i)
 		print "Booting Device:", device_name
 		time.sleep(0.3)
+
+		port = 5554
+		found = False
+		print "Looking for a free port..."
+		while not found:
+			p = sub.Popen('netstat -ln | grep \':'+str(port)+'\' | wc -l',stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
+			output, errors = p.communicate()
+			if '0' in output:
+				found = True
+			else:
+				port = port + 2
+				if port == 5682:
+					port = 5554
+			
+		print "Selected Port:",port
+		device = "emulator-"+str(port)
+		devices.add(device)
+
 		if settings.HEADLESS:
-			sub.Popen('emulator -avd ' + device_name + " -wipe-data -no-audio -no-window",
+			sub.Popen('emulator -avd ' + device_name + ' -port ' + str(port) + ' -wipe-data -no-audio -no-window',
 					  stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
 		else:
-			sub.Popen('emulator -avd ' + device_name + " -wipe-data -no-audio",
+			sub.Popen('emulator -avd ' + device_name + ' -port ' + str(port) + ' -wipe-data -no-audio',
 					  stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
 
 	print "Waiting", settings.AVD_BOOT_DELAY, "seconds"
