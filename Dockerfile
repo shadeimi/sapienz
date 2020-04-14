@@ -16,7 +16,7 @@ COPY . /usr/src/sapienz/
 COPY ./requirements.txt /usr/src/sapienz/
 RUN pip install -r /usr/src/sapienz/requirements.txt
 
-RUN apk del --purge build-dependencies && 
+RUN apk del --purge build-dependencies 
 RUN rm -rf /root/.cache /tmp/*
 
 ENTRYPOINT ["/usr/src/sapienz/entrypoint.sh"]
