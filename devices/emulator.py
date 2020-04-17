@@ -38,8 +38,10 @@ import settings
 from util import motifcore_installer
 from util import pack_and_deploy
 
-
 def get_devices():
+    return ["emulator-5554"]
+
+def get_devices_old():
 	""" will also get devices ready
 	:return: a list of avaiable devices names, e.g., emulator-5556
 	"""
@@ -71,15 +73,15 @@ def boot_devices():
 	:return:
 	"""
 	for i in range(0, settings.DEVICE_NUM):
-		device_name = settings.AVD_SERIES + str(i)
+		device_name = "sapienz" #settings.AVD_SERIES + str(i)
 		print "Booting Device:", device_name
 		time.sleep(0.3)
 		if settings.HEADLESS:
-			sub.Popen('emulator -avd ' + device_name + " -wipe-data -no-audio -no-window",
+			sub.Popen(settings.ANDROID_HOME + 'emulator/emulator -avd ' + device_name + " -wipe-data -no-audio -no-window",
 					  stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
 		else:
-			sub.Popen('emulator -avd ' + device_name + " -wipe-data -no-audio",
-					  stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
+			print 'emulator -avd ' + device_name + " -wipe-data -no-audio"
+			sub.Popen(settings.ANDROID_HOME + 'emulator/emulator -avd ' + device_name + " -wipe-data -no-audio", stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
 
 	print "Waiting", settings.AVD_BOOT_DELAY, "seconds"
 	time.sleep(settings.AVD_BOOT_DELAY)
@@ -87,7 +89,7 @@ def boot_devices():
 
 def clean_sdcard():
 	for device in get_devices():
-		os.system("adb -s " + device + " shell mount -o rw,remount rootfs /")
+		os.system("adb -s " + device + " shell mount -o rw,rootfs /")
 		os.system("adb -s " + device + " shell chmod 777 /mnt/sdcard")
 
 		os.system("adb -s " + device + " shell rm -rf /mnt/sdcard/*")
@@ -95,7 +97,8 @@ def clean_sdcard():
 
 def prepare_motifcore():
 	for device in get_devices():
-		motifcore_installer.install(settings.WORKING_DIR + "lib/motifcore.jar", settings.WORKING_DIR + "resources/motifcore", device)
+                print device
+		motifcore_installer.install(settings.WORKING_DIR + "lib/motifcore.jar", settings.WORKING_DIR + "resources/motifcore", "emulator-5554")
 
 
 def pack_and_deploy_aut():

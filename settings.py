@@ -16,9 +16,9 @@ TIMEOUT_CMD = "timeout"
 
 # === Env. Paths ===
 # path should end with a '/'
-ANDROID_HOME = '/'
+ANDROID_HOME = '/home/shadeimi/Software/android-sdk-linux/'
 # the path of sapienz folder
-WORKING_DIR = '/'
+WORKING_DIR = '/home/shadeimi/Software/eclipseWorkspace/sapienz/'
 
 
 # === GA parameters ===
